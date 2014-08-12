@@ -778,6 +778,22 @@ static int virtio_net_handle_mq(VirtIONet *n, uint8_t cmd,
 
     return VIRTIO_NET_OK;
 }
+
+static int virtio_net_handle_loopback(VirtIONet *n, uint8_t cmd,
+                                      struct iovec *iov, unsigned int iov_cnt)
+{
+    VirtIODevice *vdev = VIRTIO_DEVICE(n);
+    if (cmd == VIRTIO_NET_CTRL_LOOPBACK_SET) {
+        vdev->loopback = 1;
+        return VIRTIO_NET_OK;
+    } else if (cmd == VIRTIO_NET_CTRL_LOOPBACK_UNSET) {
+		vdev->loopback = 0;
+        return VIRTIO_NET_OK;
+    } else {
+    	return VIRTIO_NET_ERR;
+    }
+}
+
 static void virtio_net_handle_ctrl(VirtIODevice *vdev, VirtQueue *vq)
 {
     VirtIONet *n = VIRTIO_NET(vdev);
@@ -813,6 +829,8 @@ static void virtio_net_handle_ctrl(VirtIODevice *vdev, VirtQueue *vq)
             status = virtio_net_handle_mq(n, ctrl.cmd, iov, iov_cnt);
         } else if (ctrl.class == VIRTIO_NET_CTRL_GUEST_OFFLOADS) {
             status = virtio_net_handle_offloads(n, ctrl.cmd, iov, iov_cnt);
+        } else if (ctrl.class == VIRTIO_NET_CTRL_LOOPBACK) {
+            status = virtio_net_handle_loopback(n, ctrl.cmd, iov, iov_cnt);
         }
 
         s = iov_from_buf(elem.in_sg, elem.in_num, 0, &status, sizeof(status));
@@ -1108,6 +1126,9 @@ static int32_t virtio_net_flush_tx(VirtIONetQueue *q)
     VirtQueueElement elem;
     int32_t num_packets = 0;
     int queue_index = vq2q(virtio_get_queue_index(q->tx_vq));
+    NetClientState *sender = qemu_get_subqueue(n->nic, queue_index);
+	
+    sender->loopback = vdev->loopback;
     if (!(vdev->status & VIRTIO_CONFIG_S_DRIVER_OK)) {
         return num_packets;
     }
@@ -1156,9 +1177,8 @@ static int32_t virtio_net_flush_tx(VirtIONetQueue *q)
         }
 
         len = n->guest_hdr_len;
-
-        ret = qemu_sendv_packet_async(qemu_get_subqueue(n->nic, queue_index),
-                                      out_sg, out_num, virtio_net_tx_complete);
+		
+        ret = qemu_sendv_packet_async(sender, out_sg, out_num, virtio_net_tx_complete);
         if (ret == 0) {
             virtio_queue_set_notification(q->tx_vq, 0);
             q->async_tx.elem = elem;

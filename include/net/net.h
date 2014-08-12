@@ -89,6 +89,7 @@ struct NetClientState {
     NetClientDestructor *destructor;
     unsigned int queue_index;
     unsigned rxfilter_notify_enabled:1;
+    int loopback;
 };
 
 typedef struct NICState {

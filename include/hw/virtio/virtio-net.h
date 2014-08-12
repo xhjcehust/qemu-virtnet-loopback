@@ -257,6 +257,15 @@ struct virtio_net_ctrl_mq {
 #define VIRTIO_NET_CTRL_GUEST_OFFLOADS   5
  #define VIRTIO_NET_CTRL_GUEST_OFFLOADS_SET        0
 
+ /*
+  * Control Loopback
+  *
+  * The command VIRTIO_NET_CTRL_LOOPBACK_SET is used to require the device come into
+  * loopback state.
+  */
+#define VIRTIO_NET_CTRL_LOOPBACK   6
+ #define VIRTIO_NET_CTRL_LOOPBACK_SET        0
+ #define VIRTIO_NET_CTRL_LOOPBACK_UNSET        1
 #define DEFINE_VIRTIO_NET_FEATURES(_state, _field) \
         DEFINE_PROP_BIT("any_layout", _state, _field, VIRTIO_F_ANY_LAYOUT, true), \
         DEFINE_PROP_BIT("csum", _state, _field, VIRTIO_NET_F_CSUM, true), \

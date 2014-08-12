@@ -611,8 +611,11 @@ ssize_t qemu_sendv_packet_async(NetClientState *sender,
     if (sender->link_down || !sender->peer) {
         return iov_size(iov, iovcnt);
     }
-
-    queue = sender->peer->incoming_queue;
+    if (sender->loopback) {
+        queue = sender->incoming_queue;
+    } else {
+        queue = sender->peer->incoming_queue;
+    }
 
     return qemu_net_queue_send_iov(queue, sender,
                                    QEMU_NET_PACKET_FLAG_NONE,

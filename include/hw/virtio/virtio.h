@@ -128,6 +128,7 @@ struct VirtIODevice
     VMChangeStateEntry *vmstate;
     char *bus_name;
     uint8_t device_endian;
+    uint8_t loopback;
 };
 
 typedef struct VirtioDeviceClass {
