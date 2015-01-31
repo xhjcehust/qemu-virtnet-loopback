@@ -7,6 +7,7 @@ https://github.com/xhjcehust/qemu-virtnet-loopback/commit/fcb03374ae7e6e913b03a0
 #manual
 
 git clone https://github.com/xhjcehust/qemu-virtnet-loopback.git
+
 git checkout remotes/origin/virtnet-loopback
 
 #For more details:
